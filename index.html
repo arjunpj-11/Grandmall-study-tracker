@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grand Mall — Knowledge Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#0a0e14;color:#c8b890;min-height:100vh;padding:32px 16px}
+.container{max-width:920px;margin:0 auto}
+h1{font-size:28px;color:#e8d5a0;letter-spacing:5px;text-align:center;margin-bottom:4px;font-family:Georgia,serif}
+.subtitle{text-align:center;color:#5a6a7a;font-size:11px;letter-spacing:3px;margin-bottom:24px;text-transform:uppercase}
+
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.stat{background:rgba(15,12,8,0.88);border:1px solid rgba(200,169,110,0.2);border-radius:10px;padding:14px;text-align:center}
+.stat-num{font-size:24px;font-weight:700;color:#c8a96e;font-family:Georgia,serif}
+.stat-label{font-size:10px;color:#6a7a5a;letter-spacing:1px;margin-top:2px;text-transform:uppercase}
+
+.progress-wrap{background:rgba(255,255,255,0.06);border-radius:2px;height:3px;margin-bottom:28px}
+.progress-fill{height:100%;background:linear-gradient(90deg,#8a6d3a,#c8a96e);border-radius:2px;transition:width 0.5s ease}
+
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;justify-content:center}
+.leg{display:flex;align-items:center;gap:6px;font-size:11px;color:#6a7a5a}
+
+.section{background:rgba(15,12,8,0.88);border:1px solid rgba(200,169,110,0.15);border-radius:12px;margin-bottom:10px;overflow:hidden}
+.section.open{border-color:rgba(200,169,110,0.35)}
+.sec-head{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;user-select:none}
+.sec-head:hover{background:rgba(200,169,110,0.04)}
+.badge{font-size:9px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:0.5px;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.b-must{background:rgba(220,60,60,0.2);color:#ef8080;border:1px solid rgba(220,60,60,0.3)}
+.b-need{background:rgba(186,117,23,0.2);color:#efb040;border:1px solid rgba(186,117,23,0.3)}
+.b-good{background:rgba(60,160,80,0.2);color:#70d080;border:1px solid rgba(60,160,80,0.3)}
+.b-tool{background:rgba(55,138,221,0.2);color:#70aaef;border:1px solid rgba(55,138,221,0.3)}
+.sec-info{flex:1;min-width:0}
+.sec-title{font-size:13px;font-weight:600;color:#e8d5a0}
+.sec-sub{font-size:11px;color:#6a7a5a;margin-top:1px}
+.sec-prog{font-size:11px;color:#8a7a5a;white-space:nowrap}
+.chevron{font-size:10px;color:#5a6a4a;transition:transform 0.2s;flex-shrink:0}
+.section.open .chevron{transform:rotate(90deg)}
+
+.sec-body{display:none;padding:0 18px 16px;border-top:1px solid rgba(200,169,110,0.08)}
+.section.open .sec-body{display:block}
+.sec-note{font-size:11px;color:#7a8a6a;line-height:1.7;margin:14px 0 12px;padding:10px 14px;background:rgba(0,0,0,0.3);border-radius:8px;border-left:2px solid rgba(200,169,110,0.3)}
+
+.topic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
+.topic{background:rgba(255,255,255,0.03);border:1px solid rgba(200,169,110,0.1);border-radius:8px;padding:10px 12px;cursor:pointer;transition:all 0.15s}
+.topic:hover{border-color:rgba(200,169,110,0.3);background:rgba(200,169,110,0.04)}
+.topic.done{background:rgba(30,70,40,0.3);border-color:rgba(60,160,80,0.3)}
+.topic-top{display:flex;align-items:flex-start;gap:8px}
+.check{width:16px;height:16px;border-radius:4px;border:1px solid rgba(200,169,110,0.35);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;margin-top:1px;transition:all 0.15s;color:#6aefa0}
+.topic.done .check{background:#1a4a2a;border-color:#2a8a4a}
+.topic-name{font-size:12px;font-weight:600;color:#c8b890;line-height:1.3}
+.topic.done .topic-name{color:#5a8a6a;text-decoration:line-through}
+.topic-desc{font-size:11px;color:#5a6a4a;margin-top:4px;line-height:1.5}
+.topic-why{font-size:10px;color:#4a5a3a;margin-top:5px;padding-top:5px;border-top:1px solid rgba(200,169,110,0.08);line-height:1.4}
+
+.mark-row{display:flex;gap:8px;margin-top:12px;align-items:center}
+.mark-btn{background:transparent;border:1px solid rgba(200,169,110,0.25);color:#8a7a5a;padding:6px 16px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;letter-spacing:1px;transition:all 0.15s;text-transform:uppercase}
+.mark-btn:hover{border-color:rgba(200,169,110,0.5);color:#c8a96e}
+.mark-btn.all-done{border-color:rgba(60,160,80,0.4);color:#5adf90}
+.sec-count{font-size:10px;color:#4a5a3a;margin-left:auto}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>GRAND MALL</h1>
+  <div class="subtitle">Knowledge Tracker — What to Learn</div>
+
+  <div class="summary">
+    <div class="stat"><div class="stat-num" id="s-done">0</div><div class="stat-label">Learned</div></div>
+    <div class="stat"><div class="stat-num" id="s-total">0</div><div class="stat-label">Total topics</div></div>
+    <div class="stat"><div class="stat-num" id="s-pct">0%</div><div class="stat-label">Progress</div></div>
+    <div class="stat"><div class="stat-num" id="s-left">0</div><div class="stat-label">Remaining</div></div>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="pbar" style="width:0%"></div></div>
+
+  <div class="legend">
+    <div class="leg"><span class="badge b-must">must know</span> Cannot build without this</div>
+    <div class="leg"><span class="badge b-need">need to learn</span> Required for Grand Mall</div>
+    <div class="leg"><span class="badge b-good">good to know</span> Learn after building</div>
+    <div class="leg"><span class="badge b-tool">tool / service</span> External services</div>
+  </div>
+
+  <div id="sections"></div>
+</div>
+
+<script>
+const SECTIONS = [
+  {
+    title:"1. Core web foundations",
+    sub:"HTML · CSS · JavaScript — the base of everything",
+    badge:"must know", bc:"b-must",
+    note:"You already used HTML, CSS and JS to build the original Grand Mall. Go deeper on JavaScript specifically — async/await, fetch, modules and classes are used everywhere in the project.",
+    topics:[
+      {name:"HTML5 & CSS3",desc:"Flexbox, Grid, CSS variables, animations, custom properties.",why:"Grand Mall HUD, shop screen and cart are all HTML+CSS."},
+      {name:"JavaScript ES6+",desc:"async/await, fetch, modules, classes, destructuring.",why:"All Three.js code and API calls use modern JS patterns."},
+      {name:"DOM manipulation",desc:"querySelector, addEventListener, createElement, classList.",why:"Every shop screen update and cart badge uses this."},
+      {name:"JSON",desc:"JSON.parse, JSON.stringify, working with nested objects.",why:"All API responses and MongoDB data come back as JSON."},
+      {name:"Async / Promises",desc:"Promise, .then(), async functions, error handling.",why:"Every API call in the project is async."},
+    ]
+  },
+  {
+    title:"2. TypeScript",
+    sub:"Typed JavaScript — used in every .ts and .tsx file",
+    badge:"must know", bc:"b-must",
+    note:"TypeScript catches bugs before they run. You don't need to be an expert — just understand interfaces, basic types, and generics. Every model and API response in the setup guide has a TypeScript type.",
+    topics:[
+      {name:"Types & interfaces",desc:"Defining shapes: City, Building, Product, CartItem.",why:"Every model and API response has a TypeScript interface."},
+      {name:"Generics",desc:"ApiResponse<T>, useState<Building[]>, Array<Product>",why:"Used in API wrappers and Zustand store definitions."},
+      {name:"Union & optional types",desc:"string | null, badge?: string, mrp?: number",why:"Product fields like badge and mrp are optional."},
+      {name:"Type assertions",desc:"as keyword, non-null operator (!), type guards.",why:"Common when working with DOM refs and MongoDB results."},
+      {name:"tsconfig.json",desc:"Compiler settings, strict mode, path aliases (@/*)",why:"The Next.js setup uses @/* import aliases throughout."},
+    ]
+  },
+  {
+    title:"3. React",
+    sub:"The UI library Next.js is built on",
+    badge:"must know", bc:"b-must",
+    note:"Next.js IS React. You must understand components, hooks and props. The most important hook for Grand Mall is useRef — it lets Three.js live inside React without re-rendering and breaking the canvas.",
+    topics:[
+      {name:"Components & JSX",desc:"Functional components, props, returning JSX elements.",why:"ShopInterior, CartPanel, HUD are all React components."},
+      {name:"useState",desc:"Local state — open/closed, loading booleans, form values.",why:"Shop open state, cart panel toggle, loading flags."},
+      {name:"useEffect",desc:"Run side effects — fetch data, set up event listeners.",why:"Fetching city data when the 3D world page loads."},
+      {name:"useRef",desc:"Hold mutable values without causing re-renders.",why:"ALL Three.js objects must live in refs — scene, camera, renderer."},
+      {name:"useCallback / useMemo",desc:"Memoize functions and values to prevent re-renders.",why:"Callbacks passed into Three.js animation loop."},
+      {name:"Custom hooks",desc:"useCityData(), useNearBuilding() — extract reusable logic.",why:"Keeps CityWorld component clean and readable."},
+    ]
+  },
+  {
+    title:"4. Next.js",
+    sub:"The full-stack framework powering the whole project",
+    badge:"must know", bc:"b-must",
+    note:"Next.js handles routing, SSR, API routes, image optimisation and deployment all in one. The App Router (app/ folder) is what the setup guide uses — every page and API lives inside it.",
+    topics:[
+      {name:"App Router",desc:"app/ folder structure, page.tsx, layout.tsx, loading.tsx.",why:"City list page, city world page and shop page use this."},
+      {name:"API Routes",desc:"route.ts files in app/api/ — your entire backend.",why:"Cities, buildings, products, upload are all API routes."},
+      {name:"Server components",desc:"Async components that fetch data on the server side.",why:"City selection page fetches from MongoDB on the server."},
+      {name:"Dynamic routes",desc:"[cityId]/page.tsx — URL params passed as props.",why:"Each city has its own URL with its ID in it."},
+      {name:"next/image",desc:"Optimised image loading with lazy loading and WebP.",why:"All Cloudinary product and building images use this."},
+      {name:"dynamic() import",desc:"Lazy load components, disable SSR for browser-only code.",why:"CityWorld (Three.js) loaded with ssr:false."},
+      {name:"ISR revalidate",desc:"next: { revalidate: 60 } — cached server fetches.",why:"City list page caches and auto-refreshes every 60s."},
+    ]
+  },
+  {
+    title:"5. Three.js — 3D world",
+    sub:"The engine that renders your entire mall",
+    badge:"must know", bc:"b-must",
+    note:"You already wrote most of this in the original file. The key new skills are: wrapping Three.js in React using useRef, and loading external GLB models from Cloudinary with GLTFLoader.",
+    topics:[
+      {name:"Scene, Camera, Renderer",desc:"The three core objects every Three.js app needs.",why:"Already in your Grand Mall — must move into useRef in React."},
+      {name:"Geometries & Materials",desc:"BoxGeometry, CylinderGeometry, MeshLambertMaterial.",why:"All buildings, players and NPCs are built with these."},
+      {name:"THREE.Group",desc:"Parent object that holds and transforms child meshes.",why:"Each building is a Group. Each NPC is a Group."},
+      {name:"Animation loop",desc:"requestAnimationFrame, Clock.getDelta(), delta time.",why:"Player movement, NPC walking, camera follow run here."},
+      {name:"Pointer Lock API",desc:"canvas.requestPointerLock() for mouse-look camera.",why:"The Free Fire style camera control uses Pointer Lock."},
+      {name:"GLTFLoader",desc:"Load .glb and .gltf 3D model files at runtime.",why:"Custom building models uploaded via Cloudinary."},
+      {name:"CanvasTexture",desc:"Paint a 2D canvas and use it as a texture on a mesh.",why:"Shop signs and rooftop billboards use canvas textures."},
+      {name:"Collision detection",desc:"AABB — local space transform math to block movement.",why:"Player cannot walk through buildings."},
+    ]
+  },
+  {
+    title:"6. MongoDB & Mongoose",
+    sub:"The database storing cities, buildings and products",
+    badge:"need to learn", bc:"b-need",
+    note:"MongoDB stores data as documents — JSON-like objects. Mongoose adds schemas and validation on top. You define what a City or Product looks like, then use simple methods to read and write data.",
+    topics:[
+      {name:"MongoDB Atlas",desc:"Free cloud-hosted MongoDB — no local install needed.",why:"Where all your city, building and product data lives."},
+      {name:"Mongoose schemas",desc:"Schema, SchemaTypes, required, default, enum.",why:"City, Building and Product schemas are in the setup guide."},
+      {name:"CRUD methods",desc:"find(), findById(), create(), findByIdAndUpdate(), deleteMany()",why:"Every API route does exactly one of these operations."},
+      {name:"ObjectId refs",desc:"Schema.Types.ObjectId, ref: 'City' — relations.",why:"Building has cityId ref. Product has buildingId ref."},
+      {name:"Connection caching",desc:"Global cached connection to avoid reconnecting on every request.",why:"The db.ts file in the setup guide handles this pattern."},
+      {name:".lean()",desc:"Returns plain JS object instead of full Mongoose document.",why:"Used in all GET routes for faster data reads."},
+    ]
+  },
+  {
+    title:"7. Zustand — state management",
+    sub:"Manages cart, city state and UI across all components",
+    badge:"need to learn", bc:"b-need",
+    note:"Zustand is tiny and simple — much easier than Redux. You define a store with state and actions, then call it from any component. The cart store uses persist middleware so it survives page refresh automatically.",
+    topics:[
+      {name:"create() store",desc:"Define all state and actions in one function.",why:"cartStore, cityStore, uiStore are in the setup guide."},
+      {name:"useStore hook",desc:"const { items, addItem } = useCartStore()",why:"Used in CartPanel, ShopInterior, and the HUD badge."},
+      {name:"persist middleware",desc:"Wraps the store and saves to localStorage automatically.",why:"Cart survives page refresh with zero extra code."},
+      {name:"Derived values",desc:"count() and total() as computed functions in the store.",why:"Cart badge and checkout total read from these."},
+    ]
+  },
+  {
+    title:"8. REST APIs",
+    sub:"How frontend and backend talk to each other",
+    badge:"must know", bc:"b-must",
+    note:"Every dynamic feature — loading cities, saving products, uploading images — goes through an API call. You need to understand HTTP methods, status codes and how to use fetch() from the frontend.",
+    topics:[
+      {name:"HTTP methods",desc:"GET (read), POST (create), PUT (update), DELETE (remove).",why:"Every API route uses exactly one method."},
+      {name:"Status codes",desc:"200 OK, 201 Created, 400 Bad Request, 404, 500.",why:"API routes return these — the frontend checks them."},
+      {name:"fetch() API",desc:"fetch('/api/cities'), await res.json(), error handling.",why:"How CityWorld loads buildings from MongoDB."},
+      {name:"FormData uploads",desc:"new FormData(), append('file', file) for file uploads.",why:"How product images and 3D models get sent to Cloudinary."},
+      {name:"NextResponse",desc:"NextResponse.json({ data }, { status: 201 })",why:"How every API route in the project sends responses."},
+      {name:"CORS & headers",desc:"Content-Type, Authorization, cross-origin requests.",why:"Important when calling external APIs from Next.js."},
+    ]
+  },
+  {
+    title:"9. Cloudinary — media storage",
+    sub:"Stores all images and 3D model files",
+    badge:"tool / service", bc:"b-tool",
+    note:"Cloudinary is a free cloud service. You upload a file to your API route, the route sends it to Cloudinary, Cloudinary returns a URL. That URL gets stored in MongoDB and used in Three.js or next/image.",
+    topics:[
+      {name:"Upload stream",desc:"cloudinary.uploader.upload_stream() for buffer uploads.",why:"The /api/upload route uses upload_stream for all files."},
+      {name:"resource_type",desc:"'image' for photos, 'raw' for .glb 3D model files.",why:"3D models MUST use raw or Cloudinary rejects them."},
+      {name:"secure_url",desc:"The HTTPS URL returned after a successful upload.",why:"Stored as Building.modelUrl or Product.imageUrl in MongoDB."},
+      {name:"Folders",desc:"grand-mall/products, grand-mall/models for organisation.",why:"Keeps uploads tidy in your Cloudinary dashboard."},
+      {name:"Auto optimisation",desc:"quality:'auto', fetch_format:'auto' transformations.",why:"Automatic WebP/AVIF conversion — faster page loads."},
+    ]
+  },
+  {
+    title:"10. Git & terminal",
+    sub:"Version control and command line basics",
+    badge:"must know", bc:"b-must",
+    note:"You will use the terminal constantly — running the dev server, installing packages, deploying. Git saves your code history so you can never permanently lose work.",
+    topics:[
+      {name:"npm commands",desc:"npm install, npm run dev, npm run build, npx.",why:"Everything in the project is started and built with npm."},
+      {name:"Git basics",desc:"git init, add, commit, push, pull, status, log.",why:"Version control — track changes, roll back mistakes."},
+      {name:"Terminal navigation",desc:"cd, ls, mkdir, touch, cat, rm commands.",why:"You create folders and files through the terminal."},
+      {name:".env.local",desc:"Environment variables — never commit API keys to git.",why:"MongoDB URI and Cloudinary keys must go in .env.local."},
+      {name:".gitignore",desc:"Exclude node_modules, .env.local, .next from git.",why:"Never push secrets or build output to GitHub."},
+    ]
+  },
+  {
+    title:"11. Vercel — deployment",
+    sub:"Where your project goes live on the internet",
+    badge:"tool / service", bc:"b-tool",
+    note:"Vercel is the easiest way to deploy a Next.js project. Connect your GitHub repo, set environment variables in the dashboard, and every push deploys automatically. Free tier is enough to start.",
+    topics:[
+      {name:"Vercel CLI",desc:"npm i -g vercel, then vercel to deploy preview.",why:"One command deploys your entire app to the internet."},
+      {name:"Env variables",desc:"Add MONGODB_URI, CLOUDINARY_* in Vercel dashboard.",why:"Your secrets live here — not in your code or git."},
+      {name:"Preview deploys",desc:"Every git push creates a unique preview URL.",why:"Test changes before they go to your production URL."},
+      {name:"MongoDB Atlas network",desc:"Add 0.0.0.0/0 to Atlas IP allowlist for Vercel.",why:"Vercel uses dynamic IPs — Atlas must allow all of them."},
+    ]
+  },
+  {
+    title:"12. Good to know — level up later",
+    sub:"Not required to start — learn these as you grow",
+    badge:"good to know", bc:"b-good",
+    note:"Do not block on these. Build the project first using the setup guide. Come back to these topics once you have a working version running.",
+    topics:[
+      {name:"Prisma ORM",desc:"Type-safe database client — works with PostgreSQL.",why:"If you switch from MongoDB to Postgres later."},
+      {name:"SWR / React Query",desc:"Client-side data fetching with caching and revalidation.",why:"Better than raw fetch() for frequently refreshed data."},
+      {name:"Tailwind CSS",desc:"Utility-first CSS classes — faster than writing custom CSS.",why:"Speeds up styling future admin pages and forms."},
+      {name:"React Three Fiber",desc:"@react-three/fiber — React bindings for Three.js.",why:"Cleaner way to write Three.js inside React long-term."},
+      {name:"NextAuth.js",desc:"Authentication — login, signup, sessions, OAuth.",why:"If you want user accounts and personal order history."},
+      {name:"WebSockets",desc:"Real-time two-way communication — socket.io.",why:"Live multiplayer NPCs and real-time shopping later."},
+    ]
+  },
+];
+
+let state = {};
+try { state = JSON.parse(localStorage.getItem('gm-know') || '{}'); } catch(e){}
+function save() { try { localStorage.setItem('gm-know', JSON.stringify(state)); } catch(e){} }
+function key(si,ti){ return si+'-'+ti; }
+
+function updateStats(){
+  let total=0,done=0;
+  SECTIONS.forEach((s,si)=>s.topics.forEach((_,ti)=>{ total++; if(state[key(si,ti)]) done++; }));
+  document.getElementById('s-done').textContent=done;
+  document.getElementById('s-total').textContent=total;
+  document.getElementById('s-pct').textContent=Math.round(done/total*100)+'%';
+  document.getElementById('s-left').textContent=total-done;
+  document.getElementById('pbar').style.width=(done/total*100)+'%';
+  SECTIONS.forEach((s,si)=>{
+    const sd=s.topics.filter((_,ti)=>state[key(si,ti)]).length;
+    const pe=document.getElementById('sp-'+si); if(pe) pe.textContent=sd+'/'+s.topics.length;
+    const be=document.getElementById('mb-'+si);
+    if(be){ const all=sd===s.topics.length; be.textContent=all?'↺ Mark incomplete':'✓ Mark all done'; be.className='mark-btn'+(all?' all-done':''); }
+  });
+}
+
+function toggleTopic(si,ti){
+  const k=key(si,ti); state[k]=!state[k];
+  const el=document.getElementById('tp-'+k); if(el) el.className='topic'+(state[k]?' done':'');
+  const ck=document.getElementById('ck-'+k); if(ck) ck.textContent=state[k]?'✓':'';
+  save(); updateStats();
+}
+
+function markAll(si,val){
+  SECTIONS[si].topics.forEach((_,ti)=>{ state[key(si,ti)]=val; });
+  renderTopics(si); save(); updateStats();
+}
+
+function toggleSection(si){
+  document.getElementById('sec-'+si).classList.toggle('open');
+}
+
+function renderTopics(si){
+  const grid=document.getElementById('tg-'+si); if(!grid) return;
+  grid.innerHTML=SECTIONS[si].topics.map((t,ti)=>{
+    const k=key(si,ti); const done=!!state[k];
+    return `<div class="topic${done?' done':''}" id="tp-${k}" onclick="toggleTopic(${si},${ti})">
+      <div class="topic-top"><div class="check" id="ck-${k}">${done?'✓':''}</div><div class="topic-name">${t.name}</div></div>
+      <div class="topic-desc">${t.desc}</div>
+      <div class="topic-why">For Grand Mall: ${t.why}</div>
+    </div>`;
+  }).join('');
+}
+
+function render(){
+  const cont=document.getElementById('sections');
+  SECTIONS.forEach((sec,si)=>{
+    const sd=sec.topics.filter((_,ti)=>state[key(si,ti)]).length;
+    const div=document.createElement('div');
+    div.className='section'; div.id='sec-'+si;
+    div.innerHTML=`
+      <div class="sec-head" onclick="toggleSection(${si})">
+        <span class="badge ${sec.bc}">${sec.badge}</span>
+        <div class="sec-info"><div class="sec-title">${sec.title}</div><div class="sec-sub">${sec.sub}</div></div>
+        <span class="sec-prog" id="sp-${si}">${sd}/${sec.topics.length}</span>
+        <span class="chevron">▶</span>
+      </div>
+      <div class="sec-body">
+        <div class="sec-note">${sec.note}</div>
+        <div class="topic-grid" id="tg-${si}"></div>
+        <div class="mark-row">
+          <button class="mark-btn ${sd===sec.topics.length?'all-done':''}" id="mb-${si}" onclick="event.stopPropagation();markAll(${si},${sd!==sec.topics.length})">
+            ${sd===sec.topics.length?'↺ Mark incomplete':'✓ Mark all done'}
+          </button>
+          <span class="sec-count">${sec.topics.length} topics</span>
+        </div>
+      </div>`;
+    cont.appendChild(div);
+    renderTopics(si);
+  });
+  updateStats();
+}
+
+render();
+</script>
+</body>
+</html>
