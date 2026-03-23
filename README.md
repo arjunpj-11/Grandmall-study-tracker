@@ -99,7 +99,7 @@ study-tracker/
 
 ⚙️ How to Use
 Clone the repository
-git clone https://github.com/your-username/your-repo-name.git
+git clone https://github.com/arjunpj-11/Grandmall-study-tracker
 Open the project
 cd your-repo-name
 Run in browser
